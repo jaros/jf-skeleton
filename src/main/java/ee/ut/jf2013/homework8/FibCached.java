@@ -7,6 +7,10 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Runtime.getRuntime;
+import static java.lang.System.currentTimeMillis;
+import static java.math.BigInteger.ONE;
+
 public class FibCached {
 
     static class MyCache {
@@ -66,7 +70,7 @@ public class FibCached {
 
     public static BigInteger fib(long n) {
         if (n == 0 || n == 1)
-            return BigInteger.ONE;
+            return ONE;
 
         BigInteger cached = cache.get(n);
         if (cached != null)
@@ -78,18 +82,18 @@ public class FibCached {
     }
 
     public static void main(String... args) {
-        System.out.println("max memory: " + Runtime.getRuntime().maxMemory() / 1_000_000);
-        System.out.println("free memory: " + Runtime.getRuntime().freeMemory() / 1_000_000);
+        System.out.println("max memory: " + getRuntime().maxMemory() / 1_000_000);
+        System.out.println("free memory: " + getRuntime().freeMemory() / 1_000_000);
         BigInteger result = null;
-        long start = System.currentTimeMillis();
+        long start = currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
             result = fib(i);
         }
 
-        System.out.println("time: " + (System.currentTimeMillis() - start));
+        System.out.println("time: " + (currentTimeMillis() - start));
 
         System.out.println("done");
-        System.out.println("free memory: " + Runtime.getRuntime().freeMemory() / 1_000_000);
+        System.out.println("free memory: " + getRuntime().freeMemory() / 1_000_000);
         System.out.println(result);
         // report statistics
         System.out.println("putCount=" + cache.putCount()); // number of calls to cache put method
