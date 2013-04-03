@@ -16,12 +16,16 @@ public class FibCached {
     static class MyCache {
 
         private Map<Long, SoftReference<BigInteger>> cache = new HashMap<>();
-
+        private boolean observable = true;
         private long hitCount;
         private long putCount;
         private long getCount;
         private long collectedCount;
         private ReferenceQueue<BigInteger> queue = new ReferenceQueue<>();
+
+        MyCache() {
+            collectedChecker.start();
+        }
 
         public BigInteger get(long n) {
             getCount++;
@@ -29,23 +33,30 @@ public class FibCached {
             if (reference == null) {
                 return null;
             }
-            hitCount++;
-            return reference.get();
+            BigInteger value = reference.get();
+            if (value != null) {
+                hitCount++;
+            }
+            return value;
         }
 
         public void put(long n, BigInteger result) {
             cache.put(n, new SoftReference<>(result, queue));
             putCount++;
-            checkGC();
         }
 
-        private void checkGC() {
-            Reference<? extends BigInteger> poll;
-            while ((poll = queue.poll()) != null) {
-                if (poll.get() == null)
-                    collectedCount++;
+        Thread collectedChecker = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (observable) {
+                    Reference<? extends BigInteger> poll;
+                    while ((poll = queue.poll()) != null) {
+                        if (poll.get() == null)
+                            collectedCount++;
+                    }
+                }
             }
-        }
+        });
 
         public long hitCount() {
             return hitCount;
@@ -61,6 +72,10 @@ public class FibCached {
 
         public long collectedCount() {
             return collectedCount;
+        }
+
+        public void stopObservation() {
+            observable = false;
         }
     }
 
@@ -102,6 +117,7 @@ public class FibCached {
         System.out.println("missCount=" + (cache.getCount() - cache.hitCount())); // number of calls to cache get method that did not find a value from cache
         System.out.println("hitRatio=" + ((double) cache.hitCount()) / cache.getCount());
         System.out.println("collectedCount=" + cache.collectedCount()); // number of elements that were put to cache and collected by gc
+        cache.stopObservation();
     }
 
 }
