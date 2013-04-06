@@ -1,9 +1,9 @@
 package ee.ut.jf2013;
 
-import ee.ut.jf2013.homework6.CrawlServer;
+import ee.ut.jf2013.homework8.FibCached;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        CrawlServer.main(args);
+        FibCached.main(args);
     }
 }
